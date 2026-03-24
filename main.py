@@ -56,36 +56,42 @@ def finddestinationnames(csvfile: str):
 
 def findallroutes(csvfile: str):
     data = pd.read_csv(csv_directory / csvfile)
-    output = set()
+    output = dict()
     for row in data.itertuples(index=False):
         origin = getattr(row, "airport_1")
         destination = getattr(row, "airport_2")
+        distance = getattr(row, "nsmiles")
         # collect only valid string airport codes
         if isinstance(origin, str) and isinstance(destination, str):
-            output.add((origin.upper(), destination.upper()))
+            output[(origin.upper(), destination.upper())] = distance
+            output[(destination.upper(), origin.upper())] = distance
         elif pd.isna(origin) or pd.isna(destination):
             continue
         else:
             raise ValueError("Invalid data format in CSV")
 
-    return sorted(list(output))
+    return output
 
 def findoriginroutes(csvfile: str, origin: str):
     data = pd.read_csv(csv_directory / csvfile)
-    output = set()
+    output = dict()
     for row in data.itertuples(index=False):
         row_origin = getattr(row, "airport_1")
         destination = getattr(row, "airport_2")
+        distance = getattr(row, "nsmiles")
         if isinstance(row_origin, str) and isinstance(destination, str):
             if row_origin.upper() == origin.upper():
-                output.add((row_origin.upper(), destination.upper()))
+                output[(row_origin.upper(), destination.upper())] = distance
         elif pd.isna(row_origin) or pd.isna(destination):
             continue
         else:
             raise ValueError("Invalid data format in CSV")
     
-    return sorted(list(output))
+    return output
 
-if __name__ == "__main__":
-    # Debugging helper run only when executed directly.
-    print(findoriginnames("flight_data.csv"))
+
+print(findallroutes("flight_data.csv"))
+
+# if __name__ == "__main__":
+#     # Debugging helper run only when executed directly.
+#     print(findoriginnames("flight_data.csv"))
